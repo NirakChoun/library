@@ -13,22 +13,22 @@ const myLibrary = [
     }
 ];
 
-console.log(Object.setPrototypeOf(myLibrary[0], Book.prototype));
-console.log(Object.getPrototypeOf(myLibrary[0]));
 
-function Book(title, author, pages, status) {
-    this.title = title;
-    this.author = author;
-    this.pages = pages;
-    this.status = status;
-}
+class Book {
+    constructor(title, author, pages, status) {
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.status = status;
+    }
 
-Book.prototype.info = function() {
-    return `${this.title} by ${this.author}, ${this.pages}, ${this.status}`;
-}
+    info() {
+        return `${this.title} by ${this.author}, ${this.pages}, ${this.status}`;
+    }
 
-Book.prototype.setReadStatus = function(status) {
-    this.status = status;
+    set readStatus(status) {
+        this.status = status;
+    }
 }
 
 function addBookToLibrary(title, author, pages, status) {
@@ -62,8 +62,36 @@ function displayBook(book) {
                         </td>
                         <td>${book.author}</td>
                         <td>${book.pages}</td>
-                        <td>${book.status}</td>`
+                        <td>${book.status}</td>`;
+
     table.appendChild(newRow);
+
+    // For newly created objects in myLibrary
+    const newEditBtn = newRow.querySelector(".edit-btn");
+    const newDeleteBtn = newRow.querySelector(".delete-btn");
+    const index = myLibrary.length - 1;
+
+    newDeleteBtn.setAttribute("data-index", index);
+    newEditBtn.setAttribute("data-index", index);
+
+    newDeleteBtn.addEventListener("click", () => {
+        let deleteIndex = newDeleteBtn.dataset.index;
+        myLibrary.splice(deleteIndex, 1);
+        table.removeChild(newDeleteBtn.parentNode.parentNode.parentNode)
+        console.log(myLibrary);
+    });
+
+    newEditBtn.addEventListener("click", () => {
+        editDialog.showModal();
+        newSubmitBtn.addEventListener("click", (event) => {
+            event.preventDefault();
+            let editIndex = newEditBtn.dataset.index;
+            myLibrary[editIndex].readStatus = newStatus.value;
+            newEditBtn.parentNode.parentNode.parentNode.children[3].textContent = newStatus.value;
+            form.reset();
+            editDialog.close();
+        });
+    });
 }
 
 
@@ -100,10 +128,7 @@ submitBtn.addEventListener("click", (event) => {
     dialog.close();
 });
 
-for (let i = 0; i < myLibrary.length; i++) {
-    Object.setPrototypeOf(myLibrary[i], Book.prototype);
-}
-
+// For the initialized objects in myLibrary
 for (let index = 0; index < myLibrary.length; index++) {
     allDeleteBtn[index].setAttribute("data-index", index);
     allEditBtn[index].setAttribute("data-index", index);
@@ -121,7 +146,7 @@ for (let index = 0; index < allEditBtn.length; index++) {
         newSubmitBtn.addEventListener("click", (event) => {
             event.preventDefault();
             let editIndex = allEditBtn[index].dataset.index;
-            myLibrary[editIndex].setReadStatus(newStatus.value);
+            myLibrary[editIndex].readStatus = newStatus.value;
             allEditBtn[index].parentNode.parentNode.parentNode.children[3].textContent = newStatus.value;
             form.reset();
             editDialog.close();
